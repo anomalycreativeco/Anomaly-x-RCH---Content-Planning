@@ -18,6 +18,20 @@
     --simple:'Helvetica Neue',Helvetica,Arial,sans-serif;
     --radius:12px;
   }
+  /* Light mode — content area only; the logo header bar stays dark */
+  :root[data-theme="light"]{
+    --bg:#f4f5f7; --bg-2:#ffffff; --surface:#ffffff; --surface-2:#eef1f5;
+    --line:rgba(0,0,0,.10); --line-2:rgba(0,0,0,.17);
+    --text:#161a1f; --muted:#5b636e; --faint:#9aa1ac;
+    --accent-dim:rgba(82,162,213,.16);
+  }
+  :root[data-theme="light"] body{
+    background-image:radial-gradient(1100px 500px at 50% -10%, rgba(152,202,234,.18), transparent 70%);
+  }
+  :root[data-theme="light"] tr.done .cell-input{color:#1f7a5e}
+  :root[data-theme="light"] tr.done .cell-input::placeholder{color:rgba(31,122,94,.45)}
+  :root[data-theme="light"] tr.done td.check-cell::after{color:#1f7a5e}
+  body{transition:background-color .25s, color .25s}
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
   body{
@@ -38,12 +52,19 @@
   .cross{color:var(--accent); font-size:16px; font-weight:300; opacity:.85}
   .anomaly-logo{height:34px; width:auto; mix-blend-mode:screen; display:block}
   .rch-logo{height:30px; width:auto; mix-blend-mode:screen; display:block}
-  .head-right{display:flex; align-items:center; gap:18px}
-  .tagline{font-size:10px; letter-spacing:.28em; text-transform:uppercase; color:var(--muted); font-weight:500}
-  .status{display:flex; align-items:center; gap:7px; font-size:11px; color:var(--muted); letter-spacing:.04em}
-  .dot{width:8px; height:8px; border-radius:50%; background:var(--faint); box-shadow:0 0 0 0 rgba(0,0,0,0)}
+  .head-right{display:flex; align-items:center; gap:16px}
+  .tagline{font-size:10px; letter-spacing:.28em; text-transform:uppercase; color:#9a9a9a; font-weight:500}
+  .status{display:flex; align-items:center; gap:7px; font-size:11px; color:#9a9a9a; letter-spacing:.04em}
+  .dot{width:8px; height:8px; border-radius:50%; background:#5e5e5e; box-shadow:0 0 0 0 rgba(0,0,0,0)}
   .dot.live{background:#5dcaa5; box-shadow:0 0 10px rgba(93,202,165,.6)}
   .dot.demo{background:#efb04f; box-shadow:0 0 10px rgba(239,176,79,.5)}
+  .theme-toggle{
+    width:38px; height:38px; border-radius:50%; border:1px solid rgba(255,255,255,.18);
+    background:transparent; color:#f4f4f4; cursor:pointer; flex:none;
+    display:flex; align-items:center; justify-content:center; transition:.18s;
+  }
+  .theme-toggle:hover{background:rgba(255,255,255,.08); border-color:var(--accent)}
+  .theme-toggle svg{width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
 
   /* Layout */
   main{max-width:1180px; margin:0 auto; padding:34px 28px 80px}
@@ -56,8 +77,15 @@
     transition:.18s; display:flex; align-items:center; justify-content:center;
   }
   .month-nav button.nav:hover{background:var(--surface-2); border-color:var(--accent)}
-  .month-label{font-family:var(--simple); font-weight:600; font-size:29px; letter-spacing:-.01em; min-width:248px; text-align:center}
+  .month-label{
+    font-family:var(--simple); font-weight:600; font-size:29px; letter-spacing:-.01em;
+    min-width:248px; text-align:center; color:var(--text); background:transparent; border:none;
+    cursor:pointer; border-radius:10px; padding:4px 12px; transition:.15s;
+    display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  }
+  .month-label:hover{background:var(--surface-2)}
   .month-label .yr{color:var(--muted); font-weight:400}
+  .month-label .chev{font-size:13px; color:var(--muted); margin-top:3px}
 
   .search{position:relative}
   .search input{
@@ -175,6 +203,20 @@
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
   .toast .tdot{width:8px; height:8px; border-radius:50%; background:var(--done)}
 
+  /* month picker */
+  .mp-year{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px}
+  .mp-year button{width:38px; height:38px; border-radius:9px; border:1px solid var(--line-2); background:transparent;
+    color:var(--text); font-size:18px; cursor:pointer; transition:.15s}
+  .mp-year button:hover{border-color:var(--accent); background:var(--surface-2)}
+  .mp-year .y{font-family:var(--simple); font-weight:600; font-size:20px; flex:1; text-align:center}
+  .mp-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:18px}
+  .mp-cell{position:relative; height:46px; border-radius:10px; border:1px solid var(--line); background:var(--surface);
+    color:var(--text); font-family:var(--sans); font-size:13.5px; cursor:pointer; transition:.15s}
+  .mp-cell:hover{border-color:var(--accent); background:var(--surface-2)}
+  .mp-cell.cur{background:var(--accent); border-color:var(--accent); color:#06243a; font-weight:600}
+  .mp-cell.today::after{content:''; position:absolute; top:7px; right:7px; width:6px; height:6px; border-radius:50%; background:var(--done)}
+  .mp-cell.cur.today::after{background:#06243a}
+
   .ti{font-family:'tabler-icons'}
 
   /* ---------------- MOBILE: table → stacked cards ---------------- */
@@ -266,6 +308,7 @@
   <div class="head-right">
     <span class="tagline">Monthly Content Planner</span>
     <span class="status"><span id="dot" class="dot demo"></span><span id="statusText">Local demo</span></span>
+    <button class="theme-toggle" id="themeToggle" title="Toggle light / dark" aria-label="Toggle light or dark mode"></button>
   </div>
 </header>
 
@@ -273,7 +316,7 @@
   <div class="toolbar">
     <div class="month-nav">
       <button class="nav" id="prevMonth" aria-label="Previous month">‹</button>
-      <div class="month-label"><span id="monthName">Month</span> <span class="yr" id="monthYear">0000</span></div>
+      <button class="month-label" id="monthPicker" aria-label="Jump to a month"><span id="monthName">Month</span> <span class="yr" id="monthYear">0000</span> <span class="chev">▾</span></button>
       <button class="nav" id="nextMonth" aria-label="Next month">›</button>
     </div>
     <div class="search">
@@ -318,6 +361,23 @@
     <div class="modal-actions">
       <button class="btn btn-ghost" id="mCancel">Cancel</button>
       <button class="btn btn-go" id="mConfirm">Move card</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="monthModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="monthTitle">
+    <h3 id="monthTitle">Jump to month</h3>
+    <p class="sub">Pick any month — handy for hopping back a few months.</p>
+    <div class="mp-year">
+      <button id="yPrev" aria-label="Previous year">‹</button>
+      <span class="y" id="yLabel">0000</span>
+      <button id="yNext" aria-label="Next year">›</button>
+    </div>
+    <div class="mp-grid" id="mpGrid"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="mpThis">This month</button>
+      <button class="btn btn-ghost" id="mpClose">Close</button>
     </div>
   </div>
 </div>
@@ -425,6 +485,10 @@ const IC = {
   trash:'<svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13"/></svg>'
 };
 const keyOf = (d)=> `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+const lsGet = (k)=>{ try{ return localStorage.getItem(k); }catch(_){ return null; } };
+const lsSet = (k,v)=>{ try{ localStorage.setItem(k,v); }catch(_){ } };
+const SUN = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7"/></svg>';
+const MOON = '<svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.3 6.3 0 0 0 10.5 10.5z"/></svg>';
 const $ = (s)=> document.querySelector(s);
 const rowsEl = $('#rows');
 
@@ -655,8 +719,59 @@ $('#search').addEventListener('input', render);
 $('#prevMonth').addEventListener('click', ()=>{ view.setMonth(view.getMonth()-1); renderMonthLabel(); subscribeMonth(); });
 $('#nextMonth').addEventListener('click', ()=>{ view.setMonth(view.getMonth()+1); renderMonthLabel(); subscribeMonth(); });
 
+/* ---- theme ---- */
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  $('#themeToggle').innerHTML = (t==='light') ? MOON : SUN; // show the mode you'd switch TO
+}
+function initTheme(){
+  let t = lsGet('theme');
+  if(!t){ t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark'; }
+  applyTheme(t);
+}
+$('#themeToggle').addEventListener('click', ()=>{
+  const next = document.documentElement.getAttribute('data-theme')==='light' ? 'dark' : 'light';
+  applyTheme(next); lsSet('theme', next);
+});
+
+/* ---- month picker (quick nav) ---- */
+let pickYear = null;
+function openMonthPicker(){
+  pickYear = view.getFullYear();
+  renderMonthGrid();
+  $('#monthModal').hidden = false;
+}
+function closeMonthPicker(){ $('#monthModal').hidden = true; }
+function renderMonthGrid(){
+  $('#yLabel').textContent = pickYear;
+  const now = new Date();
+  const grid = $('#mpGrid'); grid.innerHTML = '';
+  MONTHS.forEach((name,i)=>{
+    const b = document.createElement('button');
+    b.className = 'mp-cell';
+    if(pickYear===view.getFullYear() && i===view.getMonth()) b.classList.add('cur');
+    if(pickYear===now.getFullYear() && i===now.getMonth()) b.classList.add('today');
+    b.textContent = name.slice(0,3);
+    b.addEventListener('click', ()=>{
+      view = new Date(pickYear, i, 1);
+      renderMonthLabel(); subscribeMonth(); closeMonthPicker();
+    });
+    grid.appendChild(b);
+  });
+}
+$('#monthPicker').addEventListener('click', openMonthPicker);
+$('#yPrev').addEventListener('click', ()=>{ pickYear--; renderMonthGrid(); });
+$('#yNext').addEventListener('click', ()=>{ pickYear++; renderMonthGrid(); });
+$('#mpThis').addEventListener('click', ()=>{
+  view = new Date(); renderMonthLabel(); subscribeMonth(); closeMonthPicker();
+});
+$('#mpClose').addEventListener('click', closeMonthPicker);
+$('#monthModal').addEventListener('click', (e)=>{ if(e.target.id==='monthModal') closeMonthPicker(); });
+document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && !$('#monthModal').hidden) closeMonthPicker(); });
+
 /* boot */
 (async ()=>{
+  initTheme();
   await initStore();
   setStatus();
   renderMonthLabel();
