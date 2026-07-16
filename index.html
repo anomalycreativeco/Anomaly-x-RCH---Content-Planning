@@ -70,10 +70,10 @@
   .theme-toggle svg{width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
 
   /* Layout */
-  main{max-width:1520px; margin:0 auto; padding:34px 28px 80px}
+  main{max-width:2400px; margin:0 auto; padding:34px clamp(16px, 2.2vw, 44px) 80px}
 
-  /* 2/3 list · 1/3 calendar */
-  .workspace{display:grid; grid-template-columns:2fr 1fr; gap:22px; align-items:start}
+  /* 2/3 list · 1/3 calendar — minmax(0,…) stops the table forcing the column wider */
+  .workspace{display:grid; grid-template-columns:minmax(0,2fr) minmax(0,1fr); gap:22px; align-items:start}
   .pane-list{min-width:0}
   .pane-cal{position:sticky; top:94px}
 
@@ -93,8 +93,8 @@
   .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px}
 
   .cal-day{
-    position:relative; aspect-ratio:1/1; border-radius:9px; border:1px solid transparent;
-    background:transparent; color:var(--muted); font-family:var(--sans); font-size:12px;
+    position:relative; aspect-ratio:1/1; max-height:74px; border-radius:9px; border:1px solid transparent;
+    background:transparent; color:var(--muted); font-family:var(--sans); font-size:13px;
     display:flex; align-items:center; justify-content:center; transition:.14s; cursor:default;
   }
   .cal-day.pad{opacity:.25}
@@ -179,8 +179,10 @@
     color:var(--muted); font-weight:600; padding:15px 16px; background:var(--surface);
     border-bottom:1px solid var(--line);
   }
-  col.c-check{width:54px} col.c-due{width:132px} col.c-addr{width:19%} col.c-idea{width:26%}
-  col.c-vid{width:15%} col.c-notes{width:auto} col.c-act{width:118px}
+  /* Widths: percentages must leave headroom for the fixed-px columns, or the
+     leftover column (Notes) gets crushed. Fixed = 46+118+104 = 268px. */
+  col.c-check{width:46px} col.c-due{width:118px} col.c-addr{width:17%} col.c-idea{width:24%}
+  col.c-vid{width:12%} col.c-notes{width:26%} col.c-act{width:104px}
   tbody tr{border-bottom:1px solid var(--line); transition:background .15s, opacity .2s}
   tbody tr:last-child{border-bottom:none}
   tbody tr:hover{background:var(--surface)}
@@ -512,10 +514,10 @@
 <script type="module">
 /* ============================================================
    ANOMALY × RCH — MONTHLY CONTENT PLANNER
-   Version: 1.1.1  (see CHANGELOG.md)
+   Version: 1.1.2  (see CHANGELOG.md)
    Bump APP_VERSION below on every release.
 ============================================================ */
-const APP_VERSION = '1.1.1';
+const APP_VERSION = '1.1.2';
 
 /* ============================================================
    DATA LAYER
