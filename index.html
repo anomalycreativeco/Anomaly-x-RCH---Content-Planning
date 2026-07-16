@@ -70,7 +70,78 @@
   .theme-toggle svg{width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
 
   /* Layout */
-  main{max-width:1180px; margin:0 auto; padding:34px 28px 80px}
+  main{max-width:1520px; margin:0 auto; padding:34px 28px 80px}
+
+  /* 2/3 list · 1/3 calendar */
+  .workspace{display:grid; grid-template-columns:2fr 1fr; gap:22px; align-items:start}
+  .pane-list{min-width:0}
+  .pane-cal{position:sticky; top:94px}
+
+  .cal-card{border:1px solid var(--line); border-radius:16px; background:var(--bg-2); padding:16px 16px 12px}
+  .cal-head{display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:14px}
+  .cal-title{font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); font-weight:600}
+  .cal-sub{font-family:var(--simple); font-weight:600; font-size:13px; color:var(--text)}
+  .cal-right{display:flex; align-items:center; gap:8px}
+  .cal-jump{
+    border:1px solid var(--accent); background:var(--accent-dim); color:var(--accent);
+    font-family:var(--sans); font-size:10px; font-weight:600; letter-spacing:.08em;
+    padding:3px 8px; border-radius:20px; cursor:pointer; transition:.15s;
+  }
+  .cal-jump:hover{background:var(--accent); color:#06243a}
+  .cal-dow{display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:6px}
+  .cal-dow span{text-align:center; font-size:10px; color:var(--faint); font-weight:600; letter-spacing:.08em}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px}
+
+  .cal-day{
+    position:relative; aspect-ratio:1/1; border-radius:9px; border:1px solid transparent;
+    background:transparent; color:var(--muted); font-family:var(--sans); font-size:12px;
+    display:flex; align-items:center; justify-content:center; transition:.14s; cursor:default;
+  }
+  .cal-day.pad{opacity:.25}
+  .cal-day.has{background:var(--surface); border-color:var(--line); color:var(--text); cursor:pointer; font-weight:500}
+  .cal-day.has:hover{border-color:var(--accent); background:var(--surface-2)}
+  .cal-day.today{
+    box-shadow:inset 0 0 0 2px var(--accent);
+    background:var(--accent-dim); color:var(--accent); font-weight:700;
+  }
+  .cal-day.today::before{                       /* small marker above the number */
+    content:''; position:absolute; top:4px; left:50%; transform:translateX(-50%);
+    width:14px; height:2px; border-radius:2px; background:var(--accent);
+  }
+  .cal-day.sel{background:var(--accent); border-color:var(--accent); color:#06243a; font-weight:700}
+  .cal-day.sel.today{box-shadow:inset 0 0 0 2px var(--text); color:#06243a}
+  .cal-day.sel.today::before{background:#06243a}
+
+  /* status dots under the date number */
+  .cal-dots{position:absolute; bottom:4px; left:0; right:0; display:flex; gap:2px; justify-content:center}
+  .cal-dots i{width:4px; height:4px; border-radius:50%; display:block}
+  .cal-dots i.d-open{background:var(--accent)}
+  .cal-dots i.d-done{background:var(--done)}
+  .cal-dots i.d-late{background:#e8857f}
+  .cal-day.sel .cal-dots i{background:#06243a}
+
+  .cal-foot{margin-top:12px; padding-top:11px; border-top:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:30px}
+  .cal-note{font-size:11px; color:var(--faint); line-height:1.4}
+  .cal-note b{color:var(--muted); font-weight:600}
+  .cal-clear{border:1px solid var(--line-2); background:transparent; color:var(--accent);
+    font-family:var(--sans); font-size:11px; padding:5px 10px; border-radius:8px; cursor:pointer; transition:.15s; flex:none}
+  .cal-clear:hover{background:var(--accent-dim); border-color:var(--accent)}
+
+  /* filter chip on the list side */
+  .filter-chip{display:inline-flex; align-items:center; gap:8px; margin-bottom:12px;
+    background:var(--accent-dim); border:1px solid rgba(152,202,234,.4); color:var(--text);
+    font-size:12px; padding:6px 12px; border-radius:20px}
+  .filter-chip button{background:transparent; border:none; color:var(--muted); cursor:pointer; font-size:14px; line-height:1; padding:0}
+  .filter-chip button:hover{color:var(--text)}
+
+  /* narrower screens: stack, calendar on top */
+  @media (max-width:1080px){
+    .workspace{grid-template-columns:1fr; gap:18px}
+    .pane-cal{position:static; order:-1}
+    .cal-card{max-width:none}
+    .cal-day{aspect-ratio:auto; height:42px}
+  }
 
   .toolbar{display:flex; align-items:flex-end; justify-content:space-between; gap:20px; flex-wrap:wrap; margin-bottom:26px}
   .month-nav{display:flex; align-items:center; gap:14px}
@@ -185,6 +256,11 @@
   .empty-note{padding:46px 16px; text-align:center; color:var(--faint); font-size:13px}
 
   footer{margin-top:46px; text-align:center; color:var(--faint); font-size:11px; letter-spacing:.12em}
+  footer .ver{
+    display:inline-block; margin-left:10px; padding:2px 8px; border-radius:20px;
+    border:1px solid var(--line); background:var(--surface); color:var(--muted);
+    font-family:var(--sans); font-size:10px; letter-spacing:.06em; font-weight:500;
+  }
   footer b{color:var(--muted); font-weight:500}
 
   /* reschedule modal */
@@ -246,6 +322,12 @@
     .status{font-size:10px}
 
     main{padding:18px 12px 64px}
+
+    /* calendar sits above the list on mobile */
+    .cal-card{padding:13px 12px 10px; border-radius:14px}
+    .cal-day{height:40px; font-size:12.5px}
+    .cal-dots i{width:3.5px; height:3.5px}
+    .workspace{gap:14px}
 
     /* toolbar stacks; search goes full width */
     .toolbar{flex-direction:column; align-items:stretch; gap:16px; margin-bottom:20px}
@@ -344,29 +426,52 @@
     </div>
   </div>
 
-  <div class="table-wrap">
-    <table>
-      <colgroup>
-        <col class="c-check"/><col class="c-due"/><col class="c-addr"/><col class="c-idea"/>
-        <col class="c-vid"/><col class="c-notes"/><col class="c-act"/>
-      </colgroup>
-      <thead>
-        <tr>
-          <th aria-label="Complete"></th>
-          <th>Due</th>
-          <th>Address / Topic</th>
-          <th>Idea</th>
-          <th>Inspiration video</th>
-          <th>Notes</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody id="rows"></tbody>
-    </table>
-  </div>
-  <button class="add-row" id="addRow"><span class="plus">+</span> Add row</button>
+  <div class="workspace">
+    <section class="pane-list">
+      <div id="filterChip" hidden></div>
+      <div class="table-wrap">
+        <table>
+          <colgroup>
+            <col class="c-check"/><col class="c-due"/><col class="c-addr"/><col class="c-idea"/>
+            <col class="c-vid"/><col class="c-notes"/><col class="c-act"/>
+          </colgroup>
+          <thead>
+            <tr>
+              <th aria-label="Complete"></th>
+              <th>Due</th>
+              <th>Address / Topic</th>
+              <th>Idea</th>
+              <th>Inspiration video</th>
+              <th>Notes</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <button class="add-row" id="addRow"><span class="plus">+</span> Add row</button>
+    </section>
 
-  <footer>PLANNING TOOL BY <b>ANOMALY CREATIVE &amp; CO.</b> &nbsp;✕&nbsp; <b>RALEIGH CUSTOM HOMES</b></footer>
+    <aside class="pane-cal">
+      <div class="cal-card">
+        <div class="cal-head">
+          <span class="cal-title">Due dates</span>
+          <span class="cal-right">
+            <span class="cal-sub" id="calMonth">—</span>
+            <button class="cal-jump" id="calJump" hidden title="Jump to the current month">Today</button>
+          </span>
+        </div>
+        <div class="cal-dow"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="cal-foot" id="calFoot"></div>
+      </div>
+    </aside>
+  </div>
+
+  <footer>
+    PLANNING TOOL BY <b>ANOMALY CREATIVE &amp; CO.</b> &nbsp;✕&nbsp; <b>RALEIGH CUSTOM HOMES</b>
+    <span class="ver" id="verBadge" title="App version">v0.0.0</span>
+  </footer>
 </main>
 
 <div class="modal-overlay" id="moveModal" hidden>
@@ -405,6 +510,13 @@
 <div class="toast" id="toast"><span class="tdot"></span><span id="toastMsg"></span></div>
 
 <script type="module">
+/* ============================================================
+   ANOMALY × RCH — MONTHLY CONTENT PLANNER
+   Version: 1.1.1  (see CHANGELOG.md)
+   Bump APP_VERSION below on every release.
+============================================================ */
+const APP_VERSION = '1.1.1';
+
 /* ============================================================
    DATA LAYER
    Uses Firestore when firebase-config.js is filled in.
@@ -536,7 +648,8 @@ function renderMonthLabel(){
 function subscribeMonth(){
   if(unsub) unsub();
   current = [];
-  rowsEl.innerHTML = `<tr><td colspan="6" class="empty-note">Loading…</td></tr>`;
+  dayFilter = null;                 // a day selection shouldn't carry across months
+  rowsEl.innerHTML = `<tr><td colspan="7" class="empty-note">Loading…</td></tr>`;
   unsub = store.subscribe(monthKey(), (rows)=>{
     current = rows;
     if(rows.length===0 && !creatingBlank){
@@ -568,15 +681,18 @@ function render(){
   const focus = captureFocus();
   const q = $('#search').value.trim().toLowerCase();
   rowsEl.innerHTML = '';
+  let shown = 0;
 
   current.slice().sort((a,b)=>a.order-b.order).forEach(r=>{
     const tr = document.createElement('tr');
     tr.dataset.id = r.id;
     if(r.done) tr.classList.add('done');
 
-    // search filter
+    // filters: search text + calendar day selection
     const hay = `${r.address||''} ${r.idea||''} ${r.notes||''} ${r.video||''} ${r.due||''} ${dueLabel(r.due)}`.toLowerCase();
-    if(q && !hay.includes(q)) tr.style.display='none';
+    const hideBySearch = q && !hay.includes(q);
+    const hideByDay = dayFilter && r.due !== dayFilter;
+    if(hideBySearch || hideByDay) tr.style.display='none'; else shown++;
 
     tr.innerHTML = `
       <td class="check-cell"><input type="checkbox" class="cbx" ${r.done?'checked':''} data-id="${r.id}" data-field="done" aria-label="Mark complete"></td>
@@ -593,13 +709,32 @@ function render(){
     rowsEl.appendChild(tr);
   });
 
+  // "no matches" state
+  if(shown===0 && current.length){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="7" class="empty-note">${dayFilter ? 'Nothing due '+dueLabel(dayFilter) : 'No rows match your search'}</td>`;
+    rowsEl.appendChild(tr);
+  }
+
   // re-inject the value the user is actively typing (avoid clobber)
   if(focus){
     const live = rowsEl.querySelector(`.cell-input[data-id="${focus.id}"][data-field="${focus.field}"]`);
     if(live) live.value = focus.value;
   }
+  renderFilterChip();
   autosizeAll();
   restoreFocus(focus);
+  renderCalendar();
+}
+
+/* chip above the list showing the active day filter */
+function renderFilterChip(){
+  const host = $('#filterChip');
+  if(!dayFilter){ host.innerHTML = ''; host.hidden = true; return; }
+  host.hidden = false;
+  host.innerHTML = `<span class="filter-chip">Due ${dueLabel(dayFilter)}
+    <button id="chipClear" title="Clear filter" aria-label="Clear date filter">✕</button></span>`;
+  $('#chipClear').addEventListener('click', ()=>{ dayFilter=null; render(); });
 }
 
 function input(r, field, ph){
@@ -634,6 +769,96 @@ function dateInput(r){
   }
   const title = due ? (n<0 ? 'Past due' : n===0 ? 'Due today' : '') : 'Set a due date';
   return `<input type="date" class="date-input ${cls}" value="${escapeHtml(due)}" data-id="${r.id}" data-field="due" title="${title}" aria-label="Due date">`;
+}
+
+/* ---- calendar (right pane) ---- */
+let dayFilter = null;              // ISO date string, or null
+
+const isoOf = (y,m,d)=> `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+
+function renderCalendar(){
+  const y = view.getFullYear(), m = view.getMonth();
+  $('#calMonth').textContent = `${MONTHS[m].slice(0,3)} ${y}`;
+
+  // "Today" shortcut only matters when you're looking at a different month
+  const now0 = new Date();
+  $('#calJump').hidden = (y===now0.getFullYear() && m===now0.getMonth());
+
+  // bucket rows by due date
+  const byDay = {};
+  let unscheduled = 0;
+  current.forEach(r=>{
+    if(!r.due){ unscheduled++; return; }
+    (byDay[r.due] ||= []).push(r);
+  });
+
+  const first = new Date(y, m, 1).getDay();        // 0=Sun
+  const days  = new Date(y, m+1, 0).getDate();
+  const prevDays = new Date(y, m, 0).getDate();
+  const grid = $('#calGrid');
+  grid.innerHTML = '';
+
+  // leading padding days (previous month)
+  for(let i=first-1; i>=0; i--){
+    const c = document.createElement('div');
+    c.className = 'cal-day pad'; c.textContent = prevDays-i;
+    grid.appendChild(c);
+  }
+
+  const t = todayISO();
+  for(let d=1; d<=days; d++){
+    const iso = isoOf(y,m,d);
+    const items = byDay[iso] || [];
+    const isToday = (iso === t);
+    const c = document.createElement('button');
+    c.className = 'cal-day';
+    if(items.length) c.classList.add('has');
+    if(isToday){ c.classList.add('today'); c.setAttribute('aria-current','date'); }
+    if(dayFilter === iso) c.classList.add('sel');
+    c.textContent = d;
+
+    if(items.length){
+      const open = items.filter(r=>!r.done);
+      const late = open.length > 0 && iso < t;          // past-dated with unfinished items
+      const dots = document.createElement('span');
+      dots.className = 'cal-dots';
+      // dot colour: red = overdue, blue = still open, green = all done
+      const kind = late ? 'd-late' : open.length ? 'd-open' : 'd-done';
+      const n = Math.min(items.length, 3);
+      for(let i=0;i<n;i++){ const s=document.createElement('i'); s.className=kind; dots.appendChild(s); }
+      c.appendChild(dots);
+      const label = items.length===1 ? '1 item' : `${items.length} items`;
+      c.title = `${isToday?'Today · ':''}${MONTHS[m]} ${d} — ${label}${late?' · overdue':''}`;
+      c.addEventListener('click', ()=>{
+        dayFilter = (dayFilter === iso) ? null : iso;   // click again to clear
+        render();
+      });
+    } else {
+      c.title = isToday ? `Today · ${MONTHS[m]} ${d} — nothing due` : '';
+      c.disabled = true;
+    }
+    grid.appendChild(c);
+  }
+
+  // footer summary
+  const foot = $('#calFoot');
+  foot.innerHTML = '';
+  const note = document.createElement('span');
+  note.className = 'cal-note';
+  if(dayFilter){
+    const cnt = (byDay[dayFilter]||[]).length;
+    note.innerHTML = `Showing <b>${cnt}</b> due ${dueLabel(dayFilter)}`;
+    const clr = document.createElement('button');
+    clr.className = 'cal-clear'; clr.textContent = 'Show all';
+    clr.addEventListener('click', ()=>{ dayFilter=null; render(); });
+    foot.appendChild(note); foot.appendChild(clr);
+  } else {
+    const scheduled = current.length - unscheduled;
+    note.innerHTML = unscheduled
+      ? `<b>${scheduled}</b> scheduled · <b>${unscheduled}</b> with no due date`
+      : (current.length ? `All <b>${current.length}</b> have due dates` : 'Nothing scheduled yet');
+    foot.appendChild(note);
+  }
 }
 
 function autosize(el){ el.style.height='auto'; el.style.height = Math.max(el.scrollHeight, 22) + 'px'; }
@@ -823,6 +1048,10 @@ function renderMonthGrid(){
     grid.appendChild(b);
   });
 }
+$('#calJump').addEventListener('click', ()=>{
+  view = new Date(); renderMonthLabel(); subscribeMonth();
+});
+
 $('#monthPicker').addEventListener('click', openMonthPicker);
 $('#yPrev').addEventListener('click', ()=>{ pickYear--; renderMonthGrid(); });
 $('#yNext').addEventListener('click', ()=>{ pickYear++; renderMonthGrid(); });
@@ -835,6 +1064,8 @@ document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && !$('#monthMod
 
 /* boot */
 (async ()=>{
+  $('#verBadge').textContent = 'v'+APP_VERSION;
+  document.title = `Anomaly × RCH — Monthly Content Planner (v${APP_VERSION})`;
   initTheme();
   await initStore();
   setStatus();
