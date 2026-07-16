@@ -108,8 +108,8 @@
     color:var(--muted); font-weight:600; padding:15px 16px; background:var(--surface);
     border-bottom:1px solid var(--line);
   }
-  col.c-check{width:54px} col.c-addr{width:21%} col.c-idea{width:30%}
-  col.c-vid{width:17%} col.c-notes{width:auto} col.c-act{width:118px}
+  col.c-check{width:54px} col.c-due{width:132px} col.c-addr{width:19%} col.c-idea{width:26%}
+  col.c-vid{width:15%} col.c-notes{width:auto} col.c-act{width:118px}
   tbody tr{border-bottom:1px solid var(--line); transition:background .15s, opacity .2s}
   tbody tr:last-child{border-bottom:none}
   tbody tr:hover{background:var(--surface)}
@@ -132,6 +132,20 @@
   .cell-input::placeholder{color:var(--faint); font-weight:300}
   .cell-input:focus{background:var(--surface-2); box-shadow:inset 0 -2px 0 var(--accent)}
   td.idea .cell-input{font-weight:400}
+
+  /* due date */
+  .date-input{
+    width:100%; background:transparent; border:1px solid transparent; outline:none;
+    color:var(--text); font-family:var(--sans); font-size:13.5px; font-weight:400;
+    padding:8px 6px; border-radius:8px; cursor:pointer; transition:.15s; color-scheme:dark;
+  }
+  :root[data-theme="light"] .date-input{color-scheme:light}
+  .date-input:hover{background:var(--surface-2)}
+  .date-input:focus{background:var(--surface-2); border-color:var(--accent)}
+  .date-input:invalid{color:var(--faint)}
+  .date-input.overdue{color:#e8857f; font-weight:500}
+  .date-input.soon{color:#efb04f; font-weight:500}
+  tr.done .date-input{color:inherit; font-weight:400}
 
   .vid-cell{display:flex; align-items:center; gap:4px}
   .vid-cell .open{
@@ -266,12 +280,14 @@
     .cbx:checked::after{left:8px; top:3px; width:6px; height:12px}
 
     /* content cells with field labels */
-    td.addr,td.idea,td.vid,td.notes{padding:13px 16px 5px}
-    td.addr::before,td.idea::before,td.vid::before,td.notes::before{
+    td.addr,td.idea,td.vid,td.notes,td.due{padding:13px 16px 5px}
+    td.addr::before,td.idea::before,td.vid::before,td.notes::before,td.due::before{
       content:attr(data-label); display:block;
       font-size:10px; letter-spacing:.16em; text-transform:uppercase;
       color:var(--muted); font-weight:600; margin-bottom:3px;
     }
+    .date-input{font-size:16px; padding:8px 8px; border:1px solid var(--line);
+      background:var(--surface); border-radius:9px; min-height:44px; width:auto; min-width:190px}
     .cell-input{font-size:16px; padding:6px 0; line-height:1.45}
     .cell-input:focus{background:transparent; box-shadow:inset 0 -2px 0 var(--accent)}
     .vid-cell .open{display:none; width:38px; height:38px}
@@ -331,12 +347,13 @@
   <div class="table-wrap">
     <table>
       <colgroup>
-        <col class="c-check"/><col class="c-addr"/><col class="c-idea"/>
+        <col class="c-check"/><col class="c-due"/><col class="c-addr"/><col class="c-idea"/>
         <col class="c-vid"/><col class="c-notes"/><col class="c-act"/>
       </colgroup>
       <thead>
         <tr>
           <th aria-label="Complete"></th>
+          <th>Due</th>
           <th>Address / Topic</th>
           <th>Idea</th>
           <th>Inspiration video</th>
@@ -452,10 +469,12 @@ function makeDemoStore(){
   // seed the current month with a couple of example rows
   const now = new Date();
   const seedKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const iso = (offset)=>{ const d=new Date(); d.setDate(d.getDate()+offset);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
   data[seedKey] = [
-    { id:nid(), order:0, done:false, address:'2108 Ridge Road (Coming Soon)', idea:'Designer vs. Contractor', video:'', notes:'Sketch-to-reality angle' },
-    { id:nid(), order:1, done:false, address:'1208 Barcroft', idea:'Construction reel — b-roll', video:'https://www.instagram.com/reel/DUEziMKEqnD/', notes:'Kyle to talk through framing' },
-    { id:nid(), order:2, done:true,  address:'Wellington', idea:'“We sold the first house”', video:'', notes:'Tease breaking ground on lot 2' },
+    { id:nid(), order:0, done:false, due:iso(9),  address:'2108 Ridge Road (Coming Soon)', idea:'Designer vs. Contractor', video:'', notes:'Sketch-to-reality angle' },
+    { id:nid(), order:1, done:false, due:iso(2),  address:'1208 Barcroft', idea:'Construction reel — b-roll', video:'https://www.instagram.com/reel/DUEziMKEqnD/', notes:'Kyle to talk through framing' },
+    { id:nid(), order:2, done:true,  due:iso(-4), address:'Wellington', idea:'“We sold the first house”', video:'', notes:'Tease breaking ground on lot 2' },
   ];
 
   const emit = (k)=>{ (subs[k]||new Set()).forEach(cb=> cb(clone(data[k]||[]).sort((a,b)=>a.order-b.order))); };
@@ -529,7 +548,7 @@ function subscribeMonth(){
   });
 }
 
-const blankRow = (order)=> ({ order, done:false, address:'', idea:'', video:'', notes:'' });
+const blankRow = (order)=> ({ order, done:false, due:'', address:'', idea:'', video:'', notes:'' });
 
 function captureFocus(){
   const el = document.activeElement;
@@ -556,11 +575,12 @@ function render(){
     if(r.done) tr.classList.add('done');
 
     // search filter
-    const hay = `${r.address||''} ${r.idea||''} ${r.notes||''} ${r.video||''}`.toLowerCase();
+    const hay = `${r.address||''} ${r.idea||''} ${r.notes||''} ${r.video||''} ${r.due||''} ${dueLabel(r.due)}`.toLowerCase();
     if(q && !hay.includes(q)) tr.style.display='none';
 
     tr.innerHTML = `
       <td class="check-cell"><input type="checkbox" class="cbx" ${r.done?'checked':''} data-id="${r.id}" data-field="done" aria-label="Mark complete"></td>
+      <td class="due" data-label="Due">${dateInput(r)}</td>
       <td class="addr" data-label="Address / Topic">${input(r,'address','Address or topic')}</td>
       <td class="idea" data-label="Idea">${input(r,'idea','Content idea')}</td>
       <td class="vid" data-label="Inspiration video"><div class="vid-cell ${isUrl(r.video)?'has-link':''}">${input(r,'video','Paste link (optional)')}<button class="open" data-open="${r.id}" title="Open video" aria-label="Open video">↗</button></div></td>
@@ -589,6 +609,33 @@ function input(r, field, ph){
 function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function isUrl(s){ return /^https?:\/\//i.test((s||'').trim()); }
 
+/* ---- due dates ---- */
+const todayISO = ()=>{ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+function dueLabel(due){
+  if(!due) return '';
+  const [y,m,d] = due.split('-').map(Number);
+  if(!y||!m||!d) return '';
+  return `${MONTHS[m-1]} ${d}`;                     // e.g. "July 20" — makes dates searchable by name
+}
+/* days from today: negative = past. Compares date strings, so no timezone drift. */
+function daysOut(due){
+  if(!due) return null;
+  const t = todayISO();
+  if(due === t) return 0;
+  return due < t ? -1 : Math.ceil((new Date(due+'T00:00:00') - new Date(t+'T00:00:00'))/86400000);
+}
+function dateInput(r){
+  const due = r.due || '';
+  const n = daysOut(due);
+  let cls = '';
+  if(due && !r.done){
+    if(n < 0) cls = 'overdue';                     // past due
+    else if(n <= 3) cls = 'soon';                  // due within 3 days
+  }
+  const title = due ? (n<0 ? 'Past due' : n===0 ? 'Due today' : '') : 'Set a due date';
+  return `<input type="date" class="date-input ${cls}" value="${escapeHtml(due)}" data-id="${r.id}" data-field="due" title="${title}" aria-label="Due date">`;
+}
+
 function autosize(el){ el.style.height='auto'; el.style.height = Math.max(el.scrollHeight, 22) + 'px'; }
 function autosizeAll(){ rowsEl.querySelectorAll('.cell-input').forEach(autosize); }
 
@@ -609,6 +656,10 @@ rowsEl.addEventListener('input', (e)=>{
   }
 });
 rowsEl.addEventListener('change', (e)=>{
+  if(e.target.classList.contains('date-input')){
+    store.updateRow(monthKey(), e.target.dataset.id, { due: e.target.value || '' });
+    return;
+  }
   if(e.target.classList.contains('cbx')){
     store.updateRow(monthKey(), e.target.dataset.id, { done: e.target.checked });
   }
@@ -651,7 +702,7 @@ function duplicateRow(id){
   if(i<0) return;
   const r = sorted[i], next = sorted[i+1];
   const newOrder = next ? (r.order+next.order)/2 : r.order+1;
-  store.addRow(monthKey(), { order:newOrder, done:false,
+  store.addRow(monthKey(), { order:newOrder, done:false, due:r.due||'',
     address:r.address||'', idea:r.idea||'', video:r.video||'', notes:r.notes||'' });
   toast('Row duplicated');
 }
@@ -678,14 +729,24 @@ function renderMoveLabel(){
 }
 function closeMoveModal(){ $('#moveModal').hidden = true; moveState.id = null; }
 
+/* when a card moves months, carry its due date to the same day of the target month */
+function shiftDue(due, targetDate){
+  if(!due) return '';
+  const day = Number(due.split('-')[2]);
+  const y = targetDate.getFullYear(), m = targetDate.getMonth();
+  const lastDay = new Date(y, m+1, 0).getDate();      // clamp e.g. Jan 31 → Feb 28
+  const d = Math.min(day, lastDay);
+  return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+
 async function moveRow(){
-  const id = moveState.id, target = keyOf(moveState.date);
+  const id = moveState.id, targetDate = moveState.date, target = keyOf(targetDate);
   if(!id || target===monthKey()) return;
   const r = current.find(x=>x.id===id);
   if(!r) return closeMoveModal();
-  const label = `${MONTHS[moveState.date.getMonth()]} ${moveState.date.getFullYear()}`;
+  const label = `${MONTHS[targetDate.getMonth()]} ${targetDate.getFullYear()}`;
   closeMoveModal();
-  await store.addRow(target, { order:Date.now(), done:!!r.done,
+  await store.addRow(target, { order:Date.now(), done:!!r.done, due:shiftDue(r.due, targetDate),
     address:r.address||'', idea:r.idea||'', video:r.video||'', notes:r.notes||'' });
   await store.deleteRow(monthKey(), id);
   toast('Moved to '+label);
